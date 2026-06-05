@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DOM Conflict Scout · Demo realista</title>
+  <style>
+    :root {
+      --bg: #0d0f14;
+      --ink: #11141c;
+      --line: #262b38;
+      --txt: #e7eaf0;
+      --muted: #98a1b3;
+      --accent: #4f9cff;
+      --danger: #ff5c63;
+      --ok: #3ad19a;
+      --warn: #ffd166;
+      --shop: #ffffff;
+      --shop-ink: #1f2430;
+      --shop-muted: #6b7488;
+      --shop-line: #e7e9ef;
+      --shop-accent: #6d4aff;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; background: var(--bg); color: var(--txt); line-height: 1.45;
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    }
+
+    /* ---------- Encabezado explicativo (propuesta de valor) ---------- */
+    header.intro {
+      padding: 16px 24px; border-bottom: 1px solid var(--line);
+      display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+    }
+    header.intro .mark { font-size: 20px; }
+    header.intro h1 { font-size: 17px; margin: 0; }
+    header.intro p { margin: 2px 0 0; color: var(--muted); font-size: 13px; max-width: 720px; }
+    header.intro .pill { margin-left: auto; font-size: 12px; padding: 4px 11px; border-radius: 999px; border: 1px solid var(--line); }
+    .pill.live { color: var(--ok); border-color: var(--ok); }
+    .pill.stopped { color: var(--danger); border-color: var(--danger); }
+
+    /* ---------- Barra de "extensiones" instalables ---------- */
+    .extbar {
+      padding: 12px 24px; background: var(--ink); border-bottom: 1px solid var(--line);
+      display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+    }
+    .extbar .hint { color: var(--muted); font-size: 12px; width: 100%; margin-bottom: 2px; }
+    .extbtn {
+      display: inline-flex; align-items: center; gap: 7px; cursor: pointer;
+      background: #1b2030; border: 1px solid var(--line); color: var(--txt);
+      border-radius: 9px; padding: 7px 11px; font: inherit; font-size: 13px; transition: .12s;
+    }
+    .extbtn:hover { border-color: var(--accent); transform: translateY(-1px); }
+    .extbtn .ico { font-size: 15px; }
+    .extbtn.special { border-color: var(--accent); }
+    .extbtn.ghost { background: transparent; color: var(--muted); }
+    .sep { width: 1px; height: 26px; background: var(--line); margin: 0 4px; }
+
+    /* ---------- Layout principal: navegador + panel detector ---------- */
+    main { display: grid; grid-template-columns: 1fr 380px; gap: 18px; padding: 18px 24px; align-items: start; }
+    @media (max-width: 1080px) { main { grid-template-columns: 1fr; } }
+
+    /* ---------- Marco de navegador ---------- */
+    .browser { background: #0a0c11; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; box-shadow: 0 18px 50px rgba(0,0,0,.45); }
+    .chrome { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: #14171f; border-bottom: 1px solid var(--line); }
+    .dots { display: flex; gap: 6px; }
+    .dots i { width: 11px; height: 11px; border-radius: 50%; display: inline-block; }
+    .dots i:nth-child(1){background:#ff5f57}.dots i:nth-child(2){background:#febc2e}.dots i:nth-child(3){background:#28c840}
+    .omnibox { flex: 1; background: #0c0f15; border: 1px solid var(--line); color: var(--muted); font-size: 12.5px; padding: 6px 12px; border-radius: 999px; }
+    .omnibox b { color: var(--txt); font-weight: 600; }
+
+    /* El viewport donde "vive" la web simulada y donde se inyecta todo. */
+    #stage-live {
+      position: relative; background: var(--shop); color: var(--shop-ink);
+      height: 620px; overflow: hidden;
+    }
+
+    /* ---------- La tienda simulada ---------- */
+    .shop-nav { display: flex; align-items: center; gap: 18px; padding: 14px 22px; border-bottom: 1px solid var(--shop-line); }
+    .shop-nav .logo { font-weight: 800; font-size: 17px; color: var(--shop-accent); }
+    .shop-nav .links { display: flex; gap: 16px; color: var(--shop-muted); font-size: 13px; }
+    .shop-nav .login-area { margin-left: auto; display: flex; align-items: center; gap: 8px; position: relative; }
+    .shop-nav input { border: 1px solid var(--shop-line); border-radius: 8px; padding: 7px 10px; font: inherit; font-size: 13px; width: 150px; }
+    .shop-nav .enter { background: var(--shop-accent); color: #fff; border: none; border-radius: 8px; padding: 8px 12px; font: inherit; font-size: 13px; cursor: pointer; }
+
+    .hero { padding: 26px 22px; display: flex; gap: 18px; align-items: center; background: linear-gradient(120deg,#f5f3ff,#eef4ff); }
+    .hero .copy h2 { margin: 0 0 6px; font-size: 22px; }
+    .hero .copy p { margin: 0; color: var(--shop-muted); font-size: 13.5px; }
+    .hero .cta { margin-top: 12px; background: var(--shop-accent); color: #fff; border: none; border-radius: 9px; padding: 9px 16px; font: inherit; cursor: pointer; }
+
+    .promo-slot { margin: 0 22px; height: 70px; border: 1px dashed #cfd3e0; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #b7bccb; font-size: 12px; position: relative; }
+
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; padding: 18px 22px; }
+    .product { border: 1px solid var(--shop-line); border-radius: 12px; padding: 14px; }
+    .product .thumb { height: 84px; border-radius: 8px; background: linear-gradient(135deg,#eceefb,#dfe8ff); margin-bottom: 10px; }
+    .product h3 { margin: 0 0 4px; font-size: 14px; }
+    .product .price { font-weight: 800; color: var(--shop-accent); }
+    .product .add { margin-top: 8px; width: 100%; border: 1px solid var(--shop-line); background: #fafbff; border-radius: 8px; padding: 7px; font: inherit; font-size: 12.5px; cursor: pointer; }
+
+    .review { margin: 4px 22px 22px; }
+    .review label { font-size: 12.5px; color: var(--shop-muted); }
+    .review .box { position: relative; }
+    .review textarea { width: 100%; min-height: 60px; border: 1px solid var(--shop-line); border-radius: 10px; padding: 10px; font: inherit; font-size: 13px; resize: none; }
+
+    /* ---------- Marcado de elementos detectados por la librería ---------- */
+    .scout-flag { outline: 2px dashed var(--danger) !important; outline-offset: 2px; }
+    .scout-badge {
+      position: absolute; top: -10px; left: 10px; z-index: 60;
+      background: var(--danger); color: #240306; font-weight: 800;
+      font-size: 10px; letter-spacing: .02em; padding: 2px 7px; border-radius: 6px;
+      white-space: nowrap; box-shadow: 0 3px 10px rgba(0,0,0,.35);
+    }
+
+    /* ---------- Estilos de los widgets de extensión inyectados ---------- */
+    .ext-pop { position: absolute; z-index: 50; animation: rise .28s ease; }
+    @keyframes rise { from { transform: translateY(8px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+    .topbar-ext { left: 0; right: 0; top: 0; background: #1a73e8; color: #fff; padding: 10px 16px; display: flex; align-items: center; gap: 12px; font-size: 13px; box-shadow: 0 2px 10px rgba(0,0,0,.2); }
+    .topbar-ext button { margin-left: auto; background: #fff; color: #1a73e8; border: none; border-radius: 7px; padding: 5px 11px; font: inherit; font-size: 12.5px; font-weight: 600; }
+
+    .corner-card { right: 18px; bottom: 18px; width: 250px; background: #fff; color: #1f2430; border-radius: 14px; box-shadow: 0 14px 40px rgba(0,0,0,.28); padding: 16px; }
+    .corner-card .h { display: flex; align-items: center; gap: 8px; font-weight: 800; margin-bottom: 6px; }
+    .corner-card p { margin: 0 0 10px; font-size: 12.5px; color: #5b6373; }
+    .corner-card .go { width: 100%; background: #ff8c1a; color: #fff; border: none; border-radius: 9px; padding: 8px; font: inherit; font-weight: 700; cursor: pointer; }
+
+    .autofill { position: absolute; top: 44px; right: 0; width: 230px; background: #fff; color: #1f2430; border-radius: 10px; box-shadow: 0 12px 30px rgba(0,0,0,.22); overflow: hidden; z-index: 55; }
+    .autofill .row { display: flex; align-items: center; gap: 9px; padding: 10px 12px; font-size: 13px; cursor: pointer; }
+    .autofill .row:hover { background: #f3f0ff; }
+    .autofill .head { background: #175ddc; color: #fff; padding: 7px 12px; font-size: 11.5px; font-weight: 700; }
+    .autofill .av { width: 22px; height: 22px; border-radius: 50%; background: #175ddc; color:#fff; display: grid; place-items: center; font-size: 11px; font-weight: 700; }
+
+    .grammar-fab { right: 18px; bottom: 110px; width: 46px; height: 46px; border-radius: 50%; background: #15c39a; color: #fff; display: grid; place-items: center; font-weight: 800; box-shadow: 0 8px 22px rgba(21,195,154,.45); font-size: 18px; }
+
+    .modal-back { left: 0; right: 0; top: 0; bottom: 0; background: rgba(10,12,20,.55); display: grid; place-items: center; z-index: 58; }
+    .wallet-modal { width: 300px; background: #fff; color: #1f2430; border-radius: 16px; padding: 20px; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,.4); }
+    .wallet-modal .fox { font-size: 34px; }
+    .wallet-modal h4 { margin: 8px 0 4px; }
+    .wallet-modal p { margin: 0 0 14px; font-size: 12.5px; color: #5b6373; }
+    .wallet-modal .connect { width: 100%; background: #f6851b; color: #fff; border: none; border-radius: 10px; padding: 10px; font: inherit; font-weight: 700; cursor: pointer; }
+
+    .dark-veil { left: 0; right: 0; top: 0; bottom: 0; background: rgba(8,10,16,.86); z-index: 40; display: flex; align-items: flex-start; justify-content: center; }
+    .dark-veil .tag { margin-top: 18px; background: #1c1f2a; color: #cfd3e0; border: 1px solid #333; border-radius: 999px; padding: 6px 14px; font-size: 12px; }
+
+    .rec-bar { left: 0; right: 0; bottom: 0; background: #20232c; color: #fff; padding: 9px 16px; display: flex; align-items: center; gap: 10px; font-size: 13px; z-index: 52; }
+    .rec-bar .dot { width: 10px; height: 10px; border-radius: 50%; background: #ff3b30; animation: blink 1s infinite; }
+    @keyframes blink { 50% { opacity: .25; } }
+    .rec-bar .stop { margin-left: auto; background: #ff3b30; border: none; color: #fff; border-radius: 7px; padding: 5px 11px; font: inherit; font-size: 12.5px; cursor: pointer; }
+
+    /* ---------- Panel del detector (propuesta de valor) ---------- */
+    .detector { background: var(--ink); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; position: sticky; top: 18px; }
+    .detector .d-head { padding: 14px 16px; border-bottom: 1px solid var(--line); }
+    .detector .d-head h2 { margin: 0; font-size: 14px; }
+    .detector .d-head p { margin: 4px 0 0; color: var(--muted); font-size: 12px; }
+    .stats { display: flex; gap: 10px; padding: 14px 16px; }
+    .stat { flex: 1; background: #12151d; border: 1px solid var(--line); border-radius: 10px; padding: 10px; text-align: center; }
+    .stat .n { font-size: 24px; font-weight: 800; }
+    .stat .t { font-size: 10.5px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+    .stat.detected .n { color: var(--danger); }
+    .stat.injected .n { color: var(--warn); }
+    .controls { display: flex; gap: 8px; padding: 0 16px 14px; }
+    .controls button { flex: 1; font: inherit; font-size: 12.5px; cursor: pointer; color: var(--txt); background: #1b2030; border: 1px solid var(--line); border-radius: 8px; padding: 8px; }
+    .controls button.warn { border-color: var(--warn); color: var(--warn); }
+    .log { max-height: 300px; overflow: auto; padding: 0 14px 14px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
+    .log .entry { padding: 8px 10px; border: 1px solid var(--line); border-radius: 9px; margin-bottom: 7px; background: #12151d; }
+    .log .entry .src { color: var(--danger); font-weight: 800; }
+    .log .entry .kw { color: var(--warn); }
+    .log .entry .ts { color: var(--muted); }
+    .log .entry .what { color: var(--muted); display: block; margin-top: 2px; font-family: inherit; }
+    .log .entry.info { border-style: dashed; color: var(--muted); }
+    .empty { color: var(--muted); font-size: 12px; padding: 10px; text-align: center; }
+  </style>
+</head>
+<body>
+  <header class="intro">
+    <span class="mark">🛡️</span>
+    <div>
+      <h1>DOM Conflict Scout — caso de uso real</h1>
+      <p>Esto es <b>tu sitio web</b> (una tienda). Las extensiones del navegador del visitante inyectan pop-ups, barras y modales <b>sin tu permiso</b>, alterando la experiencia. Pulsa una extensión para simular su intromisión y observa cómo la librería la detecta al instante en el panel de la derecha.</p>
+    </div>
+    <span id="status" class="pill live">● detector activo</span>
+  </header>
+
+  <div class="extbar">
+    <span class="hint">Simular extensión instalada en el navegador del visitante:</span>
+    <button class="extbtn" data-inject="COUPONS"><span class="ico">🍯</span> Honey (cupones)</button>
+    <button class="extbtn" data-inject="PASSWORD_MANAGERS"><span class="ico">🔐</span> Bitwarden</button>
+    <button class="extbtn" data-inject="TRANSLATOR"><span class="ico">🌐</span> Google Translate</button>
+    <button class="extbtn" data-inject="GRAMMAR"><span class="ico">✍️</span> Grammarly</button>
+    <button class="extbtn" data-inject="WEB3_WALLETS"><span class="ico">🦊</span> MetaMask</button>
+    <button class="extbtn" data-inject="ADBLOCKER"><span class="ico">🚫</span> AdBlock</button>
+    <button class="extbtn" data-inject="ACCESSIBILITY_DARK"><span class="ico">🌙</span> Dark Reader</button>
+    <button class="extbtn" data-inject="DEV_TOOLS_OVERLAYS"><span class="ico">🎥</span> Loom</button>
+    <span class="sep"></span>
+    <button id="inject-all" class="extbtn special"><span class="ico">⚡</span> Simular todas</button>
+    <button id="inject-legit" class="extbtn ghost">+ Cambio legítimo del sitio</button>
+  </div>
+
+  <main>
+    <!-- Navegador con la tienda simulada (todo se inyecta dentro de #stage-live) -->
+    <div class="browser">
+      <div class="chrome">
+        <div class="dots"><i></i><i></i><i></i></div>
+        <div class="omnibox">🔒 https://<b>tienda-nova.com</b>/inicio</div>
+      </div>
+      <div id="stage-live">
+        <nav class="shop-nav">
+          <span class="logo">◆ NovaShop</span>
+          <span class="links"><span>Inicio</span><span>Ofertas</span><span>Soporte</span></span>
+          <span class="login-area">
+            <input id="email-field" type="email" placeholder="tu@correo.com" />
+            <button class="enter">Entrar</button>
+          </span>
+        </nav>
+
+        <section class="hero">
+          <div class="copy">
+            <h2>Rebajas de temporada</h2>
+            <p>Hasta 40% en tecnología seleccionada. Envío gratis hoy.</p>
+            <button class="cta">Ver ofertas</button>
+          </div>
+        </section>
+
+        <div class="promo-slot" id="promo-slot">espacio publicitario propio del sitio</div>
+
+        <div class="grid">
+          <div class="product"><div class="thumb"></div><h3>Auriculares Nova</h3><div class="price">$59</div><button class="add">Agregar</button></div>
+          <div class="product"><div class="thumb"></div><h3>Teclado Lumen</h3><div class="price">$89</div><button class="add">Agregar</button></div>
+          <div class="product"><div class="thumb"></div><h3>Mouse Glide</h3><div class="price">$39</div><button class="add">Agregar</button></div>
+        </div>
+
+        <div class="review">
+          <label>Deja tu reseña</label>
+          <div class="box"><textarea placeholder="Escribe tu opinión sobre el producto..."></textarea></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel del detector -->
+    <aside class="detector">
+      <div class="d-head">
+        <h2>🔍 Panel del detector</h2>
+        <p>Reporte en vivo de inyecciones de extensiones sobre tu sitio.</p>
+      </div>
+      <div class="stats">
+        <div class="stat detected"><div class="n" id="n-detected">0</div><div class="t">detectadas</div></div>
+        <div class="stat injected"><div class="n" id="n-injected">0</div><div class="t">inyecciones</div></div>
+      </div>
+      <div class="controls">
+        <button id="toggle" class="warn">Detener detector</button>
+        <button id="reset">Limpiar página</button>
+      </div>
+      <div class="log" id="log"><div class="empty">Aún sin intromisiones. Simula una extensión arriba 👆</div></div>
+    </aside>
+  </main>
+
+  <!-- Build global de la librería real, servido desde jsDelivr (paquete publicado en npm). -->
+  <script src="https://cdn.jsdelivr.net/npm/@audreylopez/dom-conflict-scout@1.0.2/dist/detector.global.js"></script>
+  <script>
+    // =========================================================================
+    // NOTA: la integración con la librería (instancia, onDetection, start/stop,
+    // marcado .scout-flag + badge) es IDÉNTICA a la versión anterior. Lo único
+    // que cambió es que cada inyección ahora construye un widget realista de
+    // extensión y lo coloca dentro de la web simulada (#stage-live).
+    // =========================================================================
+
+    const stage = document.getElementById('stage-live');
+    const logEl = document.getElementById('log');
+    const nDetected = document.getElementById('n-detected');
+    const nInjected = document.getElementById('n-injected');
+    const statusEl = document.getElementById('status');
+    const toggleBtn = document.getElementById('toggle');
+
+    let injectedCount = 0, detectedCount = 0, running = true;
+
+    function pad(n) { return String(n).padStart(2, '0'); }
+    function stamp() { const d = new Date(); return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`; }
+    function clearEmpty() { const e = logEl.querySelector('.empty'); if (e) e.remove(); }
+
+    function logInfo(msg) {
+      clearEmpty();
+      const div = document.createElement('div');
+      div.className = 'entry info';
+      div.textContent = `[${stamp()}] ${msg}`;
+      logEl.prepend(div);
+    }
+
+    // Texto humano por categoría para el reporte (qué vio el usuario final).
+    const HUMAN = {
+      ADBLOCKER: 'Bloqueador tapó tu espacio publicitario',
+      TRANSLATOR: 'Barra de traducción inyectada arriba',
+      GRAMMAR: 'Botón flotante del corrector sobre la reseña',
+      COUPONS: 'Pop-up de cupones en la esquina',
+      PASSWORD_MANAGERS: 'Menú de autocompletado sobre el login',
+      ACCESSIBILITY_DARK: 'Capa de modo oscuro sobre toda la página',
+      WEB3_WALLETS: 'Modal de billetera Web3 al centro',
+      DEV_TOOLS_OVERLAYS: 'Barra de grabación de pantalla',
+    };
+
+    // ---- onDetection: marca el nodo real y lo reporta (lógica original) ----
+    function onDetection(detection) {
+      detectedCount++;
+      nDetected.textContent = detectedCount;
+
+      const el = detection.element;
+      if (el && el.classList && !el.classList.contains('scout-flag')) {
+        el.classList.add('scout-flag');
+        // El badge necesita un contenedor posicionado; los widgets ya lo son.
+        const badge = document.createElement('span');
+        badge.className = 'scout-badge';
+        badge.textContent = `🚨 ${detection.source}`;
+        el.prepend(badge);
+      }
+
+      clearEmpty();
+      const entry = document.createElement('div');
+      entry.className = 'entry';
+      entry.innerHTML =
+        `<span class="ts">[${stamp()}]</span> <span class="src">${detection.source}</span> ` +
+        `match=<span class="kw">"${detection.matchedKeyword}"</span>` +
+        `<span class="what">↳ ${HUMAN[detection.source] || 'elemento inyectado'}</span>`;
+      logEl.prepend(entry);
+    }
+
+    // Instancia REAL de la librería instalada (sin cambios).
+    const scout = new window.DOMConflictScout.DomConflictScout({ onDetection, debug: true });
+    scout.start();
+
+    // -------------------------------------------------------------------------
+    // Constructores de widgets realistas. Cada uno devuelve el nodo que lleva el
+    // fingerprint (class/id que la librería reconoce) en su nivel superior, con
+    // la clase "injected-node" y posición relativa/absoluta para anclar el badge.
+    // -------------------------------------------------------------------------
+    const BUILDERS = {
+      COUPONS() {
+        const n = document.createElement('div');
+        n.className = 'injected-node ext-pop corner-card joinhoney-widget';
+        n.innerHTML = `<div class="h">🍯 Honey</div><p>¡Encontramos <b>3 cupones</b> para NovaShop! ¿Aplicarlos al carrito?</p><button class="go">Aplicar cupones</button>`;
+        return n;
+      },
+      PASSWORD_MANAGERS() {
+        const n = document.createElement('div');
+        n.className = 'injected-node autofill bitwarden-notification-bar';
+        n.innerHTML = `<div class="head">🔐 Bitwarden · autocompletar</div><div class="row"><span class="av">N</span><div><div>tu@correo.com</div><small style="color:#6b7488">NovaShop</small></div></div>`;
+        // Anclado al área de login de la barra superior.
+        n.style.position = 'absolute';
+        n.style.top = '52px'; n.style.right = '22px';
+        return { node: n, mount: stage };
+      },
+      TRANSLATOR() {
+        const n = document.createElement('div');
+        n.className = 'injected-node ext-pop topbar-ext goog-gt-tt';
+        n.innerHTML = `🌐 Google Traductor — ¿Traducir esta página? <button>Traducir</button>`;
+        return n;
+      },
+      GRAMMAR() {
+        const n = document.createElement('div');
+        n.className = 'injected-node ext-pop grammar-fab grammarly-btn';
+        n.textContent = 'G';
+        n.title = 'Grammarly';
+        return n;
+      },
+      WEB3_WALLETS() {
+        const back = document.createElement('div');
+        back.className = 'injected-node ext-pop modal-back metamask-inpage';
+        back.innerHTML = `<div class="wallet-modal"><div class="fox">🦊</div><h4>Conectar con MetaMask</h4><p>tienda-nova.com quiere conectarse a tu billetera.</p><button class="connect">Conectar billetera</button></div>`;
+        return back;
+      },
+      ADBLOCKER() {
+        const n = document.createElement('div');
+        n.className = 'injected-node ext-pop ad-container';
+        n.style.cssText = 'position:absolute; inset:0; background:#f4f5fa; border-radius:10px; display:flex; align-items:center; justify-content:center; gap:8px; color:#8a90a2; font-size:12.5px;';
+        n.innerHTML = `🚫 Anuncio bloqueado por AdBlock`;
+        // Se monta encima del espacio publicitario del sitio.
+        return { node: n, mount: document.getElementById('promo-slot') };
+      },
+      ACCESSIBILITY_DARK() {
+        const n = document.createElement('div');
+        n.className = 'injected-node ext-pop dark-veil darkreader-overlay';
+        n.innerHTML = `<span class="tag">🌙 Dark Reader activó el modo oscuro</span>`;
+        return n;
+      },
+      DEV_TOOLS_OVERLAYS() {
+        const n = document.createElement('div');
+        n.className = 'injected-node ext-pop rec-bar loom-desktop-bar';
+        n.innerHTML = `<span class="dot"></span> Loom está grabando esta pestaña <button class="stop">Detener</button>`;
+        return n;
+      },
+    };
+
+    function injectFingerprint(source) {
+      const build = BUILDERS[source];
+      if (!build) return;
+      const out = build();
+      const node = out.node || out;
+      const mount = out.mount || stage;
+      mount.appendChild(node);
+      injectedCount++;
+      nInjected.textContent = injectedCount;
+    }
+
+    document.querySelectorAll('[data-inject]').forEach((btn) => {
+      btn.addEventListener('click', () => injectFingerprint(btn.dataset.inject));
+    });
+
+    document.getElementById('inject-all').addEventListener('click', () => {
+      Object.keys(BUILDERS).forEach((s, i) => setTimeout(() => injectFingerprint(s), i * 90));
+    });
+
+    // Cambio legítimo del sitio: NO debe detectarse (prueba de falso positivo).
+    document.getElementById('inject-legit').addEventListener('click', () => {
+      const n = document.createElement('div');
+      n.className = 'injected-node product';
+      n.style.cssText = 'margin:0 22px 16px; background:#f1fff8; border:1px solid #bdebd2;';
+      n.innerHTML = `<h3>✅ Banner de envío gratis (cambio propio del sitio)</h3><div class="price" style="color:#1e8f5b">class="product"</div>`;
+      stage.appendChild(n);
+      injectedCount++;
+      nInjected.textContent = injectedCount;
+      logInfo('Cambio legítimo del sitio añadido → se espera 0 detecciones nuevas.');
+    });
+
+    document.getElementById('toggle').addEventListener('click', () => {
+      running = !running;
+      if (running) {
+        scout.start();
+        statusEl.textContent = '● detector activo'; statusEl.className = 'pill live';
+        toggleBtn.textContent = 'Detener detector';
+        logInfo('Detector reiniciado: start().');
+      } else {
+        scout.stop();
+        statusEl.textContent = '● detector detenido'; statusEl.className = 'pill stopped';
+        toggleBtn.textContent = 'Reanudar detector';
+        logInfo('Detector detenido: stop(). Las inyecciones nuevas no se detectarán.');
+      }
+    });
+
+    document.getElementById('reset').addEventListener('click', () => {
+      stage.querySelectorAll('.injected-node').forEach((n) => n.remove());
+      stage.querySelectorAll('.scout-flag').forEach((n) => {
+        n.classList.remove('scout-flag');
+        const b = n.querySelector('.scout-badge'); if (b) b.remove();
+      });
+      injectedCount = 0; detectedCount = 0;
+      nInjected.textContent = '0'; nDetected.textContent = '0';
+      logEl.innerHTML = '<div class="empty">Página limpia. Simula una extensión arriba 👆</div>';
+    });
+  </script>
+</body>
+</html>

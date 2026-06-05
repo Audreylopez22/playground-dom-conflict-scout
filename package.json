@@ -1,0 +1,18 @@
+{
+	"name": "dom-conflict-scout-pruebas",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"test": "node --test \"tests/console/*.test.mjs\"",
+		"test:watch": "node --test --watch \"tests/console/*.test.mjs\"",
+		"test:visual": "node tests/visual/validate-visual.mjs",
+		"playground": "node tests/visual/serve.mjs"
+	},
+	"dependencies": {
+		"@audreylopez/dom-conflict-scout": "^1.0.2"
+	},
+	"devDependencies": {
+		"jsdom": "^29.1.1",
+		"puppeteer-core": "^25.1.0"
+	}
+}
