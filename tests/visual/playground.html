@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DOM Conflict Scout · Demo realista</title>
+  <title>DOM Conflict Scout · Realistic Demo</title>
   <style>
     :root {
       --bg: #0d0f14;
@@ -174,15 +174,15 @@
   <header class="intro">
     <span class="mark">🛡️</span>
     <div>
-      <h1>DOM Conflict Scout — caso de uso real</h1>
-      <p>Esto es <b>tu sitio web</b> (una tienda). Las extensiones del navegador del visitante inyectan pop-ups, barras y modales <b>sin tu permiso</b>, alterando la experiencia. Pulsa una extensión para simular su intromisión y observa cómo la librería la detecta al instante en el panel de la derecha.</p>
+      <h1>DOM Conflict Scout — real use case</h1>
+      <p>This is <b>your website</b> (a store). The visitor's browser extensions inject pop-ups, bars and modals <b>without your permission</b>, altering the experience. Click an extension to simulate its intrusion and watch the library detect it instantly in the panel on the right.</p>
     </div>
-    <span id="status" class="pill live">● detector activo</span>
+    <span id="status" class="pill live">● detector active</span>
   </header>
 
   <div class="extbar">
-    <span class="hint">Simular extensión instalada en el navegador del visitante:</span>
-    <button class="extbtn" data-inject="COUPONS"><span class="ico">🍯</span> Honey (cupones)</button>
+    <span class="hint">Simulate an extension installed in the visitor's browser:</span>
+    <button class="extbtn" data-inject="COUPONS"><span class="ico">🍯</span> Honey (coupons)</button>
     <button class="extbtn" data-inject="PASSWORD_MANAGERS"><span class="ico">🔐</span> Bitwarden</button>
     <button class="extbtn" data-inject="TRANSLATOR"><span class="ico">🌐</span> Google Translate</button>
     <button class="extbtn" data-inject="GRAMMAR"><span class="ico">✍️</span> Grammarly</button>
@@ -191,8 +191,8 @@
     <button class="extbtn" data-inject="ACCESSIBILITY_DARK"><span class="ico">🌙</span> Dark Reader</button>
     <button class="extbtn" data-inject="DEV_TOOLS_OVERLAYS"><span class="ico">🎥</span> Loom</button>
     <span class="sep"></span>
-    <button id="inject-all" class="extbtn special"><span class="ico">⚡</span> Simular todas</button>
-    <button id="inject-legit" class="extbtn ghost">+ Cambio legítimo del sitio</button>
+    <button id="inject-all" class="extbtn special"><span class="ico">⚡</span> Simulate all</button>
+    <button id="inject-legit" class="extbtn ghost">+ Legitimate site change</button>
   </div>
 
   <main>
@@ -200,37 +200,37 @@
     <div class="browser">
       <div class="chrome">
         <div class="dots"><i></i><i></i><i></i></div>
-        <div class="omnibox">🔒 https://<b>tienda-nova.com</b>/inicio</div>
+        <div class="omnibox">🔒 https://<b>nova-shop.com</b>/home</div>
       </div>
       <div id="stage-live">
         <nav class="shop-nav">
           <span class="logo">◆ NovaShop</span>
-          <span class="links"><span>Inicio</span><span>Ofertas</span><span>Soporte</span></span>
+          <span class="links"><span>Home</span><span>Deals</span><span>Support</span></span>
           <span class="login-area">
-            <input id="email-field" type="email" placeholder="tu@correo.com" />
-            <button class="enter">Entrar</button>
+            <input id="email-field" type="email" placeholder="you@email.com" />
+            <button class="enter">Sign in</button>
           </span>
         </nav>
 
         <section class="hero">
           <div class="copy">
-            <h2>Rebajas de temporada</h2>
-            <p>Hasta 40% en tecnología seleccionada. Envío gratis hoy.</p>
-            <button class="cta">Ver ofertas</button>
+            <h2>Seasonal sale</h2>
+            <p>Up to 40% off selected tech. Free shipping today.</p>
+            <button class="cta">View deals</button>
           </div>
         </section>
 
-        <div class="promo-slot" id="promo-slot">espacio publicitario propio del sitio</div>
+        <div class="promo-slot" id="promo-slot">site's own ad space</div>
 
         <div class="grid">
-          <div class="product"><div class="thumb"></div><h3>Auriculares Nova</h3><div class="price">$59</div><button class="add">Agregar</button></div>
-          <div class="product"><div class="thumb"></div><h3>Teclado Lumen</h3><div class="price">$89</div><button class="add">Agregar</button></div>
-          <div class="product"><div class="thumb"></div><h3>Mouse Glide</h3><div class="price">$39</div><button class="add">Agregar</button></div>
+          <div class="product"><div class="thumb"></div><h3>Nova Headphones</h3><div class="price">$59</div><button class="add">Add</button></div>
+          <div class="product"><div class="thumb"></div><h3>Lumen Keyboard</h3><div class="price">$89</div><button class="add">Add</button></div>
+          <div class="product"><div class="thumb"></div><h3>Glide Mouse</h3><div class="price">$39</div><button class="add">Add</button></div>
         </div>
 
         <div class="review">
-          <label>Deja tu reseña</label>
-          <div class="box"><textarea placeholder="Escribe tu opinión sobre el producto..."></textarea></div>
+          <label>Leave your review</label>
+          <div class="box"><textarea placeholder="Write your opinion about the product..."></textarea></div>
         </div>
       </div>
     </div>
@@ -238,18 +238,18 @@
     <!-- Panel del detector -->
     <aside class="detector">
       <div class="d-head">
-        <h2>🔍 Panel del detector</h2>
-        <p>Reporte en vivo de inyecciones de extensiones sobre tu sitio.</p>
+        <h2>🔍 Detector panel</h2>
+        <p>Live report of extension injections on your site.</p>
       </div>
       <div class="stats">
-        <div class="stat detected"><div class="n" id="n-detected">0</div><div class="t">detectadas</div></div>
-        <div class="stat injected"><div class="n" id="n-injected">0</div><div class="t">inyecciones</div></div>
+        <div class="stat detected"><div class="n" id="n-detected">0</div><div class="t">detected</div></div>
+        <div class="stat injected"><div class="n" id="n-injected">0</div><div class="t">injections</div></div>
       </div>
       <div class="controls">
-        <button id="toggle" class="warn">Detener detector</button>
-        <button id="reset">Limpiar página</button>
+        <button id="toggle" class="warn">Stop detector</button>
+        <button id="reset">Clear page</button>
       </div>
-      <div class="log" id="log"><div class="empty">Aún sin intromisiones. Simula una extensión arriba 👆</div></div>
+      <div class="log" id="log"><div class="empty">No intrusions yet. Simulate an extension above 👆</div></div>
     </aside>
   </main>
 
@@ -286,14 +286,14 @@
 
     // Texto humano por categoría para el reporte (qué vio el usuario final).
     const HUMAN = {
-      ADBLOCKER: 'Bloqueador tapó tu espacio publicitario',
-      TRANSLATOR: 'Barra de traducción inyectada arriba',
-      GRAMMAR: 'Botón flotante del corrector sobre la reseña',
-      COUPONS: 'Pop-up de cupones en la esquina',
-      PASSWORD_MANAGERS: 'Menú de autocompletado sobre el login',
-      ACCESSIBILITY_DARK: 'Capa de modo oscuro sobre toda la página',
-      WEB3_WALLETS: 'Modal de billetera Web3 al centro',
-      DEV_TOOLS_OVERLAYS: 'Barra de grabación de pantalla',
+      ADBLOCKER: 'Blocker covered your ad space',
+      TRANSLATOR: 'Translation bar injected at the top',
+      GRAMMAR: 'Floating checker button over the review',
+      COUPONS: 'Coupon pop-up in the corner',
+      PASSWORD_MANAGERS: 'Autofill menu over the login',
+      ACCESSIBILITY_DARK: 'Dark mode layer over the whole page',
+      WEB3_WALLETS: 'Web3 wallet modal in the center',
+      DEV_TOOLS_OVERLAYS: 'Screen recording bar',
     };
 
     // ---- onDetection: marca el nodo real y lo reporta (lógica original) ----
@@ -317,7 +317,7 @@
       entry.innerHTML =
         `<span class="ts">[${stamp()}]</span> <span class="src">${detection.source}</span> ` +
         `match=<span class="kw">"${detection.matchedKeyword}"</span>` +
-        `<span class="what">↳ ${HUMAN[detection.source] || 'elemento inyectado'}</span>`;
+        `<span class="what">↳ ${HUMAN[detection.source] || 'injected element'}</span>`;
       logEl.prepend(entry);
     }
 
@@ -334,13 +334,13 @@
       COUPONS() {
         const n = document.createElement('div');
         n.className = 'injected-node ext-pop corner-card joinhoney-widget';
-        n.innerHTML = `<div class="h">🍯 Honey</div><p>¡Encontramos <b>3 cupones</b> para NovaShop! ¿Aplicarlos al carrito?</p><button class="go">Aplicar cupones</button>`;
+        n.innerHTML = `<div class="h">🍯 Honey</div><p>We found <b>3 coupons</b> for NovaShop! Apply them to the cart?</p><button class="go">Apply coupons</button>`;
         return n;
       },
       PASSWORD_MANAGERS() {
         const n = document.createElement('div');
         n.className = 'injected-node autofill bitwarden-notification-bar';
-        n.innerHTML = `<div class="head">🔐 Bitwarden · autocompletar</div><div class="row"><span class="av">N</span><div><div>tu@correo.com</div><small style="color:#6b7488">NovaShop</small></div></div>`;
+        n.innerHTML = `<div class="head">🔐 Bitwarden · autofill</div><div class="row"><span class="av">N</span><div><div>you@email.com</div><small style="color:#6b7488">NovaShop</small></div></div>`;
         // Anclado al área de login de la barra superior.
         n.style.position = 'absolute';
         n.style.top = '52px'; n.style.right = '22px';
@@ -349,7 +349,7 @@
       TRANSLATOR() {
         const n = document.createElement('div');
         n.className = 'injected-node ext-pop topbar-ext goog-gt-tt';
-        n.innerHTML = `🌐 Google Traductor — ¿Traducir esta página? <button>Traducir</button>`;
+        n.innerHTML = `🌐 Google Translate — Translate this page? <button>Translate</button>`;
         return n;
       },
       GRAMMAR() {
@@ -362,27 +362,27 @@
       WEB3_WALLETS() {
         const back = document.createElement('div');
         back.className = 'injected-node ext-pop modal-back metamask-inpage';
-        back.innerHTML = `<div class="wallet-modal"><div class="fox">🦊</div><h4>Conectar con MetaMask</h4><p>tienda-nova.com quiere conectarse a tu billetera.</p><button class="connect">Conectar billetera</button></div>`;
+        back.innerHTML = `<div class="wallet-modal"><div class="fox">🦊</div><h4>Connect with MetaMask</h4><p>nova-shop.com wants to connect to your wallet.</p><button class="connect">Connect wallet</button></div>`;
         return back;
       },
       ADBLOCKER() {
         const n = document.createElement('div');
         n.className = 'injected-node ext-pop ad-container';
         n.style.cssText = 'position:absolute; inset:0; background:#f4f5fa; border-radius:10px; display:flex; align-items:center; justify-content:center; gap:8px; color:#8a90a2; font-size:12.5px;';
-        n.innerHTML = `🚫 Anuncio bloqueado por AdBlock`;
+        n.innerHTML = `🚫 Ad blocked by AdBlock`;
         // Se monta encima del espacio publicitario del sitio.
         return { node: n, mount: document.getElementById('promo-slot') };
       },
       ACCESSIBILITY_DARK() {
         const n = document.createElement('div');
         n.className = 'injected-node ext-pop dark-veil darkreader-overlay';
-        n.innerHTML = `<span class="tag">🌙 Dark Reader activó el modo oscuro</span>`;
+        n.innerHTML = `<span class="tag">🌙 Dark Reader enabled dark mode</span>`;
         return n;
       },
       DEV_TOOLS_OVERLAYS() {
         const n = document.createElement('div');
         n.className = 'injected-node ext-pop rec-bar loom-desktop-bar';
-        n.innerHTML = `<span class="dot"></span> Loom está grabando esta pestaña <button class="stop">Detener</button>`;
+        n.innerHTML = `<span class="dot"></span> Loom is recording this tab <button class="stop">Stop</button>`;
         return n;
       },
     };
@@ -411,25 +411,25 @@
       const n = document.createElement('div');
       n.className = 'injected-node product';
       n.style.cssText = 'margin:0 22px 16px; background:#f1fff8; border:1px solid #bdebd2;';
-      n.innerHTML = `<h3>✅ Banner de envío gratis (cambio propio del sitio)</h3><div class="price" style="color:#1e8f5b">class="product"</div>`;
+      n.innerHTML = `<h3>✅ Free shipping banner (site's own change)</h3><div class="price" style="color:#1e8f5b">class="product"</div>`;
       stage.appendChild(n);
       injectedCount++;
       nInjected.textContent = injectedCount;
-      logInfo('Cambio legítimo del sitio añadido → se espera 0 detecciones nuevas.');
+      logInfo('Legitimate site change added → 0 new detections expected.');
     });
 
     document.getElementById('toggle').addEventListener('click', () => {
       running = !running;
       if (running) {
         scout.start();
-        statusEl.textContent = '● detector activo'; statusEl.className = 'pill live';
-        toggleBtn.textContent = 'Detener detector';
-        logInfo('Detector reiniciado: start().');
+        statusEl.textContent = '● detector active'; statusEl.className = 'pill live';
+        toggleBtn.textContent = 'Stop detector';
+        logInfo('Detector restarted: start().');
       } else {
         scout.stop();
-        statusEl.textContent = '● detector detenido'; statusEl.className = 'pill stopped';
-        toggleBtn.textContent = 'Reanudar detector';
-        logInfo('Detector detenido: stop(). Las inyecciones nuevas no se detectarán.');
+        statusEl.textContent = '● detector stopped'; statusEl.className = 'pill stopped';
+        toggleBtn.textContent = 'Resume detector';
+        logInfo('Detector stopped: stop(). New injections will not be detected.');
       }
     });
 
@@ -441,7 +441,7 @@
       });
       injectedCount = 0; detectedCount = 0;
       nInjected.textContent = '0'; nDetected.textContent = '0';
-      logEl.innerHTML = '<div class="empty">Página limpia. Simula una extensión arriba 👆</div>';
+      logEl.innerHTML = '<div class="empty">Clean page. Simulate an extension above 👆</div>';
     });
   </script>
 </body>

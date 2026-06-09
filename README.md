@@ -1,125 +1,125 @@
-# Suite de pruebas para `@audreylopez/dom-conflict-scout`
+# Test suite for `@audreylopez/dom-conflict-scout`
 
-Conjunto de pruebas (consola + visuales) para la librería **DOM Conflict Scout**, que
-detecta inyecciones en el DOM hechas por extensiones de navegador (adblockers,
-traductores, correctores, gestores de contraseñas, billeteras Web3, etc.).
+Test set (console + visual) for the **DOM Conflict Scout** library, which
+detects DOM injections made by browser extensions (adblockers,
+translators, grammar checkers, password managers, Web3 wallets, etc.).
 
-## Qué hace la librería (resumen verificado del código)
+## What the library does (verified summary from the code)
 
-- Expone la clase `DomConflictScout` con `start()` y `stop()`.
-- Al hacer `start()` monta un `MutationObserver` sobre `document.body` **y** hace un
-  escaneo inicial de todo el subárbol existente.
-- Por cada elemento, construye la cadena `id + " " + className` (en minúsculas) y la
-  compara contra un diccionario de "fingerprints" agrupados en 8 categorías.
-- Si hay coincidencia, llama a `onDetection({ source, matchedKeyword, element })`.
-- **Ignora** elementos `<script>`, `<style>` y cualquier cosa bajo `[data-v-app]`.
-- La detección se basa **solo en `id` y `className`** (no en otros atributos ni en el
-  `outerHTML`, pese a lo que sugiere el README oficial).
+- Exposes the `DomConflictScout` class with `start()` and `stop()`.
+- On `start()` it mounts a `MutationObserver` on `document.body` **and** performs an
+  initial scan of the entire existing subtree.
+- For each element, it builds the string `id + " " + className` (lowercased) and
+  compares it against a dictionary of "fingerprints" grouped into 8 categories.
+- On a match, it calls `onDetection({ source, matchedKeyword, element })`.
+- It **ignores** `<script>` and `<style>` elements and anything under `[data-v-app]`.
+- Detection is based **only on `id` and `className`** (not on other attributes nor on
+  `outerHTML`, despite what the official README suggests).
 
-Las 8 categorías: `ADBLOCKER`, `TRANSLATOR`, `GRAMMAR`, `COUPONS`,
+The 8 categories: `ADBLOCKER`, `TRANSLATOR`, `GRAMMAR`, `COUPONS`,
 `PASSWORD_MANAGERS`, `ACCESSIBILITY_DARK`, `WEB3_WALLETS`, `DEV_TOOLS_OVERLAYS`.
 
 ---
 
-## 1. Pruebas de consola (22 pruebas, todas en verde)
+## 1. Console tests (22 tests, all green)
 
-Montan un DOM real con **jsdom** e inyectan firmas de extensiones para comprobar que
-el detector las identifica (o que correctamente las ignora).
-
-```bash
-pnpm install      # instala dependencias (jsdom, puppeteer-core)
-pnpm test         # ejecuta las 22 pruebas de consola
-```
-
-También:
+They mount a real DOM with **jsdom** and inject extension fingerprints to check that
+the detector identifies them (or correctly ignores them).
 
 ```bash
-pnpm test:watch   # modo watch
+pnpm install      # install dependencies (jsdom, puppeteer-core)
+pnpm test         # run the 22 console tests
 ```
 
-Cobertura (qué casos del paquete se ejercitan):
+Also:
 
-1. Detección por `className` de las **8 categorías** (8 pruebas).
-2. Detección por atributo `id` (`goog-gt-` → `TRANSLATOR`).
-3. Inyección **dinámica** posterior a `start()` capturada por `MutationObserver`.
-4. **Sin falsos positivos** con DOM legítimo.
-5. Ignora elementos `<script>` aunque coincidan.
-6. Ignora elementos `<style>` aunque coincidan.
-7. Ignora subárboles bajo `[data-v-app]` (apps Vue).
-8. `stop()` detiene la detección de inyecciones nuevas.
-9. Coincidencia **case-insensitive**.
-10. Detección de **múltiples extensiones** distintas a la vez.
-11. El escaneo inicial alcanza **nodos anidados** pre-existentes.
-12. No lanza si se omite `onDetection`.
-13. Captura una **ráfaga** de inyecciones dinámicas.
-14. Forma del objeto de detección (`source`, `matchedKeyword`, `element`).
-15. Precedencia por **subcadena** en el diccionario (`skiptranslate` → `translate`).
+```bash
+pnpm test:watch   # watch mode
+```
+
+Coverage (which package cases are exercised):
+
+1. Detection by `className` of the **8 categories** (8 tests).
+2. Detection by `id` attribute (`goog-gt-` → `TRANSLATOR`).
+3. **Dynamic** injection after `start()` captured by `MutationObserver`.
+4. **No false positives** with legitimate DOM.
+5. Ignores `<script>` elements even if they match.
+6. Ignores `<style>` elements even if they match.
+7. Ignores subtrees under `[data-v-app]` (Vue apps).
+8. `stop()` halts detection of new injections.
+9. **Case-insensitive** matching.
+10. Detection of **multiple different extensions** at once.
+11. The initial scan reaches pre-existing **nested nodes**.
+12. Does not throw if `onDetection` is omitted.
+13. Captures a **burst** of dynamic injections.
+14. Shape of the detection object (`source`, `matchedKeyword`, `element`).
+15. **Substring** precedence in the dictionary (`skiptranslate` → `translate`).
 
 ---
 
-## 2. Pruebas visuales
+## 2. Visual tests
 
-### a) Validación automática (headless, con checks)
+### a) Automatic validation (headless, with checks)
 
-Abre el playground en Chrome headless, dispara las inyecciones reales, comprueba que
-la librería las detecta y marca, y guarda capturas como evidencia.
+Opens the playground in headless Chrome, fires the real injections, checks that
+the library detects and flags them, and saves screenshots as evidence.
 
 ```bash
 pnpm test:visual
 ```
 
-Genera:
-- `tests/visual/resultado-detecciones.png` — las 8 extensiones detectadas y marcadas.
-- `tests/visual/resultado-final.png` — estado tras probar falso positivo y `stop()`.
+Generates:
+- `tests/visual/resultado-detecciones.png` — the 8 extensions detected and flagged.
+- `tests/visual/resultado-final.png` — state after testing a false positive and `stop()`.
 
-> Requiere Google Chrome en `/usr/bin/google-chrome`. Si está en otra ruta, edita la
-> constante `CHROME` en `tests/visual/validate-visual.mjs`.
+> Requires Google Chrome at `/usr/bin/google-chrome`. If it lives elsewhere, edit the
+> `CHROME` constant in `tests/visual/validate-visual.mjs`.
 
-### b) Playground interactivo (caso de uso real)
+### b) Interactive playground (real use case)
 
 ```bash
 pnpm playground
-# Abre en el navegador:  http://localhost:5173/
+# Open in the browser:  http://localhost:5173/
 ```
 
-El playground simula un **caso de uso real**: una tienda online ("NovaShop") dentro
-de un marco de navegador. Cada botón de la barra superior simula una **extensión del
-navegador del visitante** que inyecta su UI sobre tu sitio sin permiso:
+The playground simulates a **real use case**: an online store ("NovaShop") inside
+a browser frame. Each button in the top bar simulates a **visitor's browser
+extension** that injects its UI on top of your site without permission:
 
-- 🍯 **Honey** → pop-up de cupones en la esquina.
-- 🔐 **Bitwarden** → menú de autocompletado sobre el campo de login.
-- 🌐 **Google Translate** → barra de traducción arriba.
-- ✍️ **Grammarly** → botón flotante sobre la caja de reseña.
-- 🦊 **MetaMask** → modal de "Conectar billetera" al centro.
-- 🚫 **AdBlock** → tapa el espacio publicitario del sitio.
-- 🌙 **Dark Reader** → capa de modo oscuro sobre toda la página.
-- 🎥 **Loom** → barra de grabación de pantalla.
+- 🍯 **Honey** → coupon pop-up in the corner.
+- 🔐 **Bitwarden** → autofill menu over the login field.
+- 🌐 **Google Translate** → translation bar at the top.
+- ✍️ **Grammarly** → floating button over the review box.
+- 🦊 **MetaMask** → "Connect wallet" modal in the center.
+- 🚫 **AdBlock** → covers the site's ad slot.
+- 🌙 **Dark Reader** → dark-mode layer over the whole page.
+- 🎥 **Loom** → screen-recording bar.
 
-Cada widget inyectado que la librería detecta se resalta con un **borde rojo punteado
-y un badge** con la categoría, y aparece en el **panel del detector** (derecha) con un
-reporte en lenguaje natural, el `matchedKeyword` y los contadores en vivo.
+Each injected widget the library detects is highlighted with a **dashed red border
+and a badge** showing the category, and it appears in the **detector panel** (right)
+with a natural-language report, the `matchedKeyword`, and live counters.
 
-Otros botones:
-- **⚡ Simular todas**: lanza las 8 extensiones en secuencia.
-- **+ Cambio legítimo del sitio**: añade un elemento propio → la librería **no** lo
-  marca (demuestra ausencia de falsos positivos).
-- **Detener / Reanudar detector**: llama a `stop()` / `start()`.
-- **Limpiar página**: reinicia el sitio.
+Other buttons:
+- **⚡ Simulate all**: fires the 8 extensions in sequence.
+- **+ Legitimate site change**: adds an element of your own → the library does **not**
+  flag it (proves the absence of false positives).
+- **Stop / Resume detector**: calls `stop()` / `start()`.
+- **Clear page**: resets the site.
 
-Así el cliente final ve el valor de un vistazo: las extensiones alteran su web y la
-librería las identifica en tiempo real.
+This way the end client sees the value at a glance: extensions alter their site and the
+library identifies them in real time.
 
 ---
 
-## Estructura
+## Structure
 
 ```
 tests/
   console/
-    helpers.mjs        # montaje de jsdom + utilidades
-    scout.test.mjs     # 22 pruebas (node:test)
+    helpers.mjs        # jsdom setup + utilities
+    scout.test.mjs     # 22 tests (node:test)
   visual/
-    playground.html    # playground interactivo
-    serve.mjs          # servidor estático sin dependencias
-    validate-visual.mjs# validación headless con capturas
+    playground.html    # interactive playground
+    serve.mjs          # dependency-free static server
+    validate-visual.mjs# headless validation with screenshots
 ```

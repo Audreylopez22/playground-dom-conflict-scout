@@ -58,29 +58,29 @@ try {
 
   // La librería global debe estar cargada.
   const hasLib = await page.evaluate(() => typeof window.DOMConflictScout?.DomConflictScout === 'function');
-  check('La librería global se carga en el navegador', hasLib);
+  check('The global library loads in the browser', hasLib);
 
   // Estado inicial limpio.
   const initialDetected = await page.$eval('#n-detected', (e) => Number(e.textContent));
-  check('Detecciones iniciales = 0 (sin falsos positivos en la UI)', initialDetected === 0, `valor=${initialDetected}`);
+  check('Initial detections = 0 (no false positives in the UI)', initialDetected === 0, `value=${initialDetected}`);
 
   // Inyectar TODAS las extensiones (el botón escalona las inyecciones ~90ms c/u).
   await page.click('#inject-all');
   await new Promise((r) => setTimeout(r, 1500));
 
   const detectedAll = await page.$eval('#n-detected', (e) => Number(e.textContent));
-  check('Tras "Inyectar todas" se detectan las 8 categorías', detectedAll === 8, `detectadas=${detectedAll}`);
+  check('After "Inject all" the 8 categories are detected', detectedAll === 8, `detected=${detectedAll}`);
 
   // Cada nodo inyectado debe quedar marcado con .scout-flag y su badge.
   const flagged = await page.$$eval('#stage-live .injected-node.scout-flag', (els) => els.length);
   const badges = await page.$$eval('#stage-live .scout-badge', (els) => els.map((e) => e.textContent.trim()));
-  check('Los 8 nodos inyectados reciben marcador visual (.scout-flag)', flagged === 8, `marcados=${flagged}`);
-  check('Cada nodo detectado muestra su badge con la categoría', badges.length === 8, badges.join(' | '));
+  check('The 8 injected nodes receive a visual marker (.scout-flag)', flagged === 8, `flagged=${flagged}`);
+  check('Each detected node shows its category badge', badges.length === 8, badges.join(' | '));
 
   // Verifica que aparezcan las 8 categorías esperadas en los badges.
   const expected = ['ADBLOCKER','TRANSLATOR','GRAMMAR','COUPONS','PASSWORD_MANAGERS','ACCESSIBILITY_DARK','WEB3_WALLETS','DEV_TOOLS_OVERLAYS'];
   const allCats = expected.every((c) => badges.some((b) => b.includes(c)));
-  check('Aparecen las 8 categorías esperadas en los badges', allCats);
+  check('The 8 expected categories appear in the badges', allCats);
 
   await page.screenshot({ path: path.join(HERE, 'resultado-detecciones.png') });
 
@@ -89,7 +89,7 @@ try {
   await page.click('#inject-legit');
   await new Promise((r) => setTimeout(r, 300));
   const afterLegit = await page.$eval('#n-detected', (e) => Number(e.textContent));
-  check('Un nodo legítimo NO genera detección (sin falso positivo)', afterLegit === beforeLegit, `${beforeLegit} -> ${afterLegit}`);
+  check('A legitimate node does NOT trigger a detection (no false positive)', afterLegit === beforeLegit, `${beforeLegit} -> ${afterLegit}`);
 
   // Prueba de stop(): detener el vigilante e inyectar no debe detectar.
   await page.click('#toggle'); // detener
@@ -98,12 +98,12 @@ try {
   await page.click('[data-inject="ADBLOCKER"]');
   await new Promise((r) => setTimeout(r, 300));
   const afterStopped = await page.$eval('#n-detected', (e) => Number(e.textContent));
-  check('Con el vigilante detenido (stop) no se detectan inyecciones nuevas', afterStopped === beforeStopped, `${beforeStopped} -> ${afterStopped}`);
+  check('With the watcher stopped (stop) new injections are not detected', afterStopped === beforeStopped, `${beforeStopped} -> ${afterStopped}`);
 
   await page.screenshot({ path: path.join(HERE, 'resultado-final.png') });
 
   // La librería en modo debug debe haber emitido logs en consola.
-  check('La librería emite logs de detección en modo debug', libLogs.length > 0, `${libLogs.length} mensajes`);
+  check('The library emits detection logs in debug mode', libLogs.length > 0, `${libLogs.length} messages`);
 
 } finally {
   await browser.close();
@@ -111,6 +111,6 @@ try {
 }
 
 const failed = checks.filter((c) => !c.ok);
-console.log(`\n  Resultado: ${checks.length - failed.length}/${checks.length} checks visuales en verde`);
-console.log('  Capturas: tests/visual/resultado-detecciones.png, tests/visual/resultado-final.png\n');
+console.log(`\n  Result: ${checks.length - failed.length}/${checks.length} visual checks passing`);
+console.log('  Screenshots: tests/visual/resultado-detecciones.png, tests/visual/resultado-final.png\n');
 process.exit(failed.length ? 1 : 0);

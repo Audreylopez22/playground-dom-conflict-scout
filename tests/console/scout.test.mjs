@@ -24,7 +24,7 @@ const CATEGORIES = [
 ];
 
 for (const { source, html, keyword } of CATEGORIES) {
-  test(`detecta categoría ${source} por className`, () => {
+  test(`detects category ${source} by className`, () => {
     const { cleanup } = createDom(html);
     const collector = createCollector();
     const scout = new DomConflictScout({ onDetection: collector.onDetection });
@@ -32,10 +32,10 @@ for (const { source, html, keyword } of CATEGORIES) {
     scout.start();
     scout.stop();
 
-    assert.equal(collector.all.length, 1, 'debe haber exactamente una detección');
+    assert.equal(collector.all.length, 1, 'there must be exactly one detection');
     assert.equal(collector.all[0].source, source);
     assert.equal(collector.all[0].matchedKeyword, keyword);
-    assert.ok(collector.all[0].element, 'la detección debe incluir el elemento del DOM');
+    assert.ok(collector.all[0].element, 'the detection must include the DOM element');
     cleanup();
   });
 }
@@ -43,7 +43,7 @@ for (const { source, html, keyword } of CATEGORIES) {
 // ---------------------------------------------------------------------------
 // 2. Detección por ID (la librería concatena id + className para el match).
 // ---------------------------------------------------------------------------
-test('detecta por atributo id (goog-gt- => TRANSLATOR)', () => {
+test('detects by id attribute (goog-gt- => TRANSLATOR)', () => {
   const { cleanup } = createDom('<div id="goog-gt-tt">widget</div>');
   const collector = createCollector();
   const scout = new DomConflictScout({ onDetection: collector.onDetection });
@@ -60,13 +60,13 @@ test('detecta por atributo id (goog-gt- => TRANSLATOR)', () => {
 // ---------------------------------------------------------------------------
 // 3. Inyección DINÁMICA después de start(): debe dispararse vía MutationObserver.
 // ---------------------------------------------------------------------------
-test('detecta inyección dinámica vía MutationObserver tras start()', async () => {
+test('detects dynamic injection via MutationObserver after start()', async () => {
   const { document, cleanup } = createDom('');
   const collector = createCollector();
   const scout = new DomConflictScout({ onDetection: collector.onDetection });
 
   scout.start();
-  assert.equal(collector.all.length, 0, 'el body arranca limpio');
+  assert.equal(collector.all.length, 0, 'the body starts clean');
 
   // Una extensión inyecta su nodo después de que el vigilante ya está activo.
   const injected = document.createElement('div');
@@ -76,7 +76,7 @@ test('detecta inyección dinámica vía MutationObserver tras start()', async ()
   await flushMutations();
   scout.stop();
 
-  assert.equal(collector.all.length, 1, 'el observer debe capturar el nodo nuevo');
+  assert.equal(collector.all.length, 1, 'the observer must capture the new node');
   assert.equal(collector.all[0].source, 'ADBLOCKER');
   assert.equal(collector.all[0].matchedKeyword, 'adguard');
   cleanup();
@@ -85,11 +85,11 @@ test('detecta inyección dinámica vía MutationObserver tras start()', async ()
 // ---------------------------------------------------------------------------
 // 4. NO debe haber falsos positivos con DOM legítimo de la aplicación.
 // ---------------------------------------------------------------------------
-test('no genera falsos positivos con elementos legítimos', () => {
+test('does not produce false positives with legitimate elements', () => {
   const { cleanup } = createDom(
     '<header id="main-header" class="site-header"></header>' +
-    '<main class="content-wrapper"><p class="paragraph">Hola</p></main>' +
-    '<footer id="page-footer" class="footer">Fin</footer>'
+    '<main class="content-wrapper"><p class="paragraph">Hello</p></main>' +
+    '<footer id="page-footer" class="footer">End</footer>'
   );
   const collector = createCollector();
   const scout = new DomConflictScout({ onDetection: collector.onDetection });
@@ -97,14 +97,14 @@ test('no genera falsos positivos con elementos legítimos', () => {
   scout.start();
   scout.stop();
 
-  assert.equal(collector.all.length, 0, 'ningún elemento legítimo debe marcarse');
+  assert.equal(collector.all.length, 0, 'no legitimate element must be flagged');
   cleanup();
 });
 
 // ---------------------------------------------------------------------------
 // 5. Los elementos <script> deben ignorarse aunque tengan un fingerprint.
 // ---------------------------------------------------------------------------
-test('ignora elementos <script> aunque coincidan', () => {
+test('ignores <script> elements even if they match', () => {
   const { cleanup } = createDom('<script class="adblock-loader"></script>');
   const collector = createCollector();
   const scout = new DomConflictScout({ onDetection: collector.onDetection });
@@ -112,14 +112,14 @@ test('ignora elementos <script> aunque coincidan', () => {
   scout.start();
   scout.stop();
 
-  assert.equal(collector.all.length, 0, '<script> está en la lista de ignorados');
+  assert.equal(collector.all.length, 0, '<script> is in the ignore list');
   cleanup();
 });
 
 // ---------------------------------------------------------------------------
 // 6. Los elementos <style> deben ignorarse aunque tengan un fingerprint.
 // ---------------------------------------------------------------------------
-test('ignora elementos <style> aunque coincidan', () => {
+test('ignores <style> elements even if they match', () => {
   const { cleanup } = createDom('<style class="ads-injected"></style>');
   const collector = createCollector();
   const scout = new DomConflictScout({ onDetection: collector.onDetection });
@@ -127,16 +127,16 @@ test('ignora elementos <style> aunque coincidan', () => {
   scout.start();
   scout.stop();
 
-  assert.equal(collector.all.length, 0, '<style> está en la lista de ignorados');
+  assert.equal(collector.all.length, 0, '<style> is in the ignore list');
   cleanup();
 });
 
 // ---------------------------------------------------------------------------
 // 7. Subárbol marcado con [data-v-app] (apps Vue) debe ignorarse por completo.
 // ---------------------------------------------------------------------------
-test('ignora subárboles bajo [data-v-app]', () => {
+test('ignores subtrees under [data-v-app]', () => {
   const { cleanup } = createDom(
-    '<div data-v-app><div class="sponsor-banner">contenido propio</div></div>'
+    '<div data-v-app><div class="sponsor-banner">own content</div></div>'
   );
   const collector = createCollector();
   const scout = new DomConflictScout({ onDetection: collector.onDetection });
@@ -144,14 +144,14 @@ test('ignora subárboles bajo [data-v-app]', () => {
   scout.start();
   scout.stop();
 
-  assert.equal(collector.all.length, 0, 'todo lo que cuelga de [data-v-app] se ignora');
+  assert.equal(collector.all.length, 0, 'everything under [data-v-app] is ignored');
   cleanup();
 });
 
 // ---------------------------------------------------------------------------
 // 8. stop() detiene la vigilancia: inyecciones posteriores no se detectan.
 // ---------------------------------------------------------------------------
-test('stop() detiene la detección de inyecciones nuevas', async () => {
+test('stop() halts detection of new injections', async () => {
   const { document, cleanup } = createDom('');
   const collector = createCollector();
   const scout = new DomConflictScout({ onDetection: collector.onDetection });
@@ -165,14 +165,14 @@ test('stop() detiene la detección de inyecciones nuevas', async () => {
 
   await flushMutations();
 
-  assert.equal(collector.all.length, 0, 'tras stop() no debe registrar nada');
+  assert.equal(collector.all.length, 0, 'after stop() nothing must be recorded');
   cleanup();
 });
 
 // ---------------------------------------------------------------------------
 // 9. La coincidencia es case-insensitive (la librería normaliza a minúsculas).
 // ---------------------------------------------------------------------------
-test('la coincidencia ignora mayúsculas/minúsculas', () => {
+test('matching is case-insensitive', () => {
   const { cleanup } = createDom('<div class="MetaMask-Wrapper">x</div>');
   const collector = createCollector();
   const scout = new DomConflictScout({ onDetection: collector.onDetection });
@@ -189,7 +189,7 @@ test('la coincidencia ignora mayúsculas/minúsculas', () => {
 // ---------------------------------------------------------------------------
 // 10. Detección de MÚLTIPLES extensiones distintas en el mismo documento.
 // ---------------------------------------------------------------------------
-test('detecta múltiples extensiones distintas a la vez', () => {
+test('detects multiple distinct extensions at once', () => {
   const { cleanup } = createDom(
     '<div class="adblock-bar"></div>' +
     '<div id="grammarly-root"></div>' +
@@ -202,7 +202,7 @@ test('detecta múltiples extensiones distintas a la vez', () => {
   scout.start();
   scout.stop();
 
-  assert.equal(collector.all.length, 4, 'una detección por cada extensión');
+  assert.equal(collector.all.length, 4, 'one detection per extension');
   assert.deepEqual(
     [...collector.sources].sort(),
     ['ADBLOCKER', 'COUPONS', 'GRAMMAR', 'PASSWORD_MANAGERS']
@@ -213,7 +213,7 @@ test('detecta múltiples extensiones distintas a la vez', () => {
 // ---------------------------------------------------------------------------
 // 11. El escaneo inicial recorre todo el subárbol pre-existente del body.
 // ---------------------------------------------------------------------------
-test('el escaneo inicial alcanza nodos anidados pre-existentes', () => {
+test('the initial scan reaches pre-existing nested nodes', () => {
   const { cleanup } = createDom(
     '<section class="legit"><div class="row"><span class="coupon-flag">x</span></div></section>'
   );
@@ -223,7 +223,7 @@ test('el escaneo inicial alcanza nodos anidados pre-existentes', () => {
   scout.start();
   scout.stop();
 
-  assert.equal(collector.all.length, 1, 'debe encontrar el nodo anidado');
+  assert.equal(collector.all.length, 1, 'must find the nested node');
   assert.equal(collector.all[0].source, 'COUPONS');
   assert.equal(collector.all[0].matchedKeyword, 'coupon');
   cleanup();
@@ -232,7 +232,7 @@ test('el escaneo inicial alcanza nodos anidados pre-existentes', () => {
 // ---------------------------------------------------------------------------
 // 12. Funciona sin onDetection (no debe lanzar) y respeta el modo debug.
 // ---------------------------------------------------------------------------
-test('no lanza si se omite onDetection', () => {
+test('does not throw if onDetection is omitted', () => {
   const { document, cleanup } = createDom('<div class="phantom-wallet"></div>');
   const scout = new DomConflictScout({}); // sin callback
 
@@ -246,7 +246,7 @@ test('no lanza si se omite onDetection', () => {
 // ---------------------------------------------------------------------------
 // 13. Inyecciones dinámicas en ráfaga (varias mutaciones seguidas).
 // ---------------------------------------------------------------------------
-test('captura una ráfaga de inyecciones dinámicas', async () => {
+test('captures a burst of dynamic injections', async () => {
   const { document, cleanup } = createDom('');
   const collector = createCollector();
   const scout = new DomConflictScout({ onDetection: collector.onDetection });
@@ -273,7 +273,7 @@ test('captura una ráfaga de inyecciones dinámicas', async () => {
 // ---------------------------------------------------------------------------
 // 14. La forma del objeto de detección es la documentada (source/keyword/element).
 // ---------------------------------------------------------------------------
-test('el objeto de detección expone source, matchedKeyword y element', () => {
+test('the detection object exposes source, matchedKeyword and element', () => {
   const { window, cleanup } = createDom('<div class="darkreader-style"></div>');
   const collector = createCollector();
   const scout = new DomConflictScout({ onDetection: collector.onDetection });
@@ -284,7 +284,7 @@ test('el objeto de detección expone source, matchedKeyword y element', () => {
   const d = collector.all[0];
   assert.equal(typeof d.source, 'string');
   assert.equal(typeof d.matchedKeyword, 'string');
-  assert.ok(d.element instanceof window.HTMLElement, 'element debe ser un HTMLElement');
+  assert.ok(d.element instanceof window.HTMLElement, 'element must be an HTMLElement');
   assert.equal(d.element.className, 'darkreader-style');
   cleanup();
 });
@@ -294,7 +294,7 @@ test('el objeto de detección expone source, matchedKeyword y element', () => {
 //     "skiptranslate" contiene "translate", que aparece antes en el diccionario,
 //     por lo que matchedKeyword es "translate" (no "skiptranslate").
 // ---------------------------------------------------------------------------
-test('la coincidencia respeta el orden del diccionario (subcadena)', () => {
+test('matching respects the dictionary order (substring)', () => {
   const { cleanup } = createDom('<div class="skiptranslate">x</div>');
   const collector = createCollector();
   const scout = new DomConflictScout({ onDetection: collector.onDetection });
@@ -304,6 +304,6 @@ test('la coincidencia respeta el orden del diccionario (subcadena)', () => {
 
   assert.equal(collector.all.length, 1);
   assert.equal(collector.all[0].source, 'TRANSLATOR');
-  assert.equal(collector.all[0].matchedKeyword, 'translate', 'gana el keyword más temprano que encaje');
+  assert.equal(collector.all[0].matchedKeyword, 'translate', 'the earliest matching keyword wins');
   cleanup();
 });

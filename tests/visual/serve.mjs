@@ -41,6 +41,6 @@ const server = http.createServer(async (req, res) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`\n  🔍 Playground de DOM Conflict Scout`);
-  console.log(`  ➜  Abre:  http://localhost:${PORT}/\n`);
+  console.log(`\n  🔍 DOM Conflict Scout Playground`);
+  console.log(`  ➜  Open:  http://localhost:${PORT}/\n`);
 });

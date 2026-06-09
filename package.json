@@ -1,5 +1,5 @@
 {
-	"name": "dom-conflict-scout-pruebas",
+	"name": "dom-conflict-scout-tests",
 	"private": true,
 	"type": "module",
 	"scripts": {
